@@ -5,9 +5,11 @@ var fs = require('fs'),
     send = require('koa-send'),
     jwt = require('koa-jwt'),
     cors = require('koa-cors'),
-    bodyParser = require('koa-bodyparser'),
+    bodyParser = require('koa-body'),
+    json = require('koa-json'),
+    parse = require('co-busboy'),
     config = require('./config');
-
+    
 module.exports = function (app) {
   // middleware configuration
   if (config.app.env !== 'test') {
@@ -22,7 +24,16 @@ module.exports = function (app) {
     methods: 'GET, HEAD, OPTIONS, PUT, POST, DELETE',
     headers: 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   }));
-  app.use(bodyParser());
+ //Set up body parsing middleware
+app.use(bodyParser({
+    // formidable: {
+    //   uploadDir: __dirname + '/uploads'
+    // },
+    multipart: true,
+    urlencoded: true
+}));
+
+app.use(json());
 
   // register special controllers which should come before any jwt token check and be publicly accessible
   require('../controllers/public').init(app);

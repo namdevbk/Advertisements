@@ -104,73 +104,92 @@ angular.module('koan.common')
 
   return api;
 })
-.service("uploadService", function($http, $q) {
-
-    return ({
-      upload: upload
-    });
-
-    function upload(file) {
-      var upl = $http({
-        method: 'POST',
-        url: 'http://localhost:3000/api/advertisements', // /api/upload
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        data: {
-          upload: file
-        },
-        transformRequest: function(data, headersGetter) {
-          var formData = new FormData();
-          angular.forEach(data, function(value, key) {
-            formData.append(key, value);
-          });
-
-          var headers = headersGetter();
-          delete headers['Content-Type'];
-
-          return formData;
-        }
-      });
-      return upl.then(handleSuccess, handleError);
-
-    } // End upload function
-
-    // ---
-    // PRIVATE METHODS.
-    // ---
-  
-    function handleError(response, data) {
-      if (!angular.isObject(response.data) ||!response.data.message) {
-        return ($q.reject("An unknown error occurred."));
-      }
-
-      return ($q.reject(response.data.message));
-    }
-
-    function handleSuccess(response) {
-      return (response);
-    }
-
-})
-.directive("fileinput", [function() {
+.directive('fileModel', ['$parse', function ($parse) {
     return {
-      scope: {
-        fileinput: "=",
-        filepreview: "="
-      },
-      link: function(scope, element, attributes) {
-        element.bind("change", function(changeEvent) {
-          console.log(changeEvent.target.files)
-          scope.fileinput = changeEvent.target.files[0];
-          var reader = new FileReader();
-          reader.onload = function(loadEvent) {
-            scope.$apply(function() {
-              scope.filepreview = loadEvent.target.result;
-            });
-          }
-          reader.readAsDataURL(scope.fileinput);
-        });
-      }
+       restrict: 'A',
+       link: function(scope, element, attrs) {
+          var model = $parse(attrs.fileModel);
+          var modelSetter = model.assign;
+          element.bind('change', function(){
+             // scope.fileinput = changeEvent.target.files[0];
+             scope.$apply(function(){
+                //scope.filepreview = loadEvent.target.result;
+                modelSetter(scope, element[0].files[0]);
+             });
+          });
+       }
+    };
+ }])
+.service('fileUpload', ['$http', function ($http) {
+    this.uploadFileToUrl = function(file, uploadUrl){
+       var fd = new FormData();
+       fd.append('file', file);
+       $http.post('http://localhost:3000/api/advertisements', fd, {
+          transformRequest: angular.identity,
+          headers: {'Content-Type': undefined}
+       })
+       .success(function(result){
+        console.log(result)
+       })
+       .error(function(){
+       });
     }
-  }]);
+ }]);
+// .service("uploadService", function($http, $q) {
+
+//     return ({
+//       upload: upload
+//     });
+
+//     function upload(file) {
+//       var fd = new FormData();
+//       fd.append('file', file);
+//       var upl = $http({
+//         method: 'POST',
+//         url: 'http://localhost:3000/api/advertisements',
+//         data:
+//         transformRequest: angular.identity,
+//         headers: {'Content-Type': undefined}
+//       });
+//       return upl.then(handleSuccess, handleError);
+
+//     } // End upload function
+
+//     // ---
+//     // PRIVATE METHODS.
+//     // ---
+  
+//     function handleError(response, data) {
+//       if (!angular.isObject(response.data) ||!response.data.message) {
+//         return ($q.reject("An unknown error occurred."));
+//       }
+
+//       return ($q.reject(response.data.message));
+//     }
+
+//     function handleSuccess(response) {
+//       return (response);
+//     }
+
+// })
+// .directive("fileinput", [function() {
+//     return {
+//       scope: {
+//         fileinput: "=",
+//         filepreview: "="
+//       },
+//       link: function(scope, element, attributes) {
+//         element.bind("change", function(changeEvent) {
+//           console.log(changeEvent.target.files)
+//           scope.fileinput = changeEvent.target.files[0];
+//           var reader = new FileReader();
+//           reader.onload = function(loadEvent) {
+//             scope.$apply(function() {
+//               scope.filepreview = loadEvent.target.result;
+//             });
+//           }
+//           reader.readAsDataURL(scope.fileinput);
+//         });
+//       }
+//     }
+// }]);

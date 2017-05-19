@@ -4,9 +4,11 @@
  * Posts controller for serving user posts.
  */
 
-const route = require('koa-route'),
+var route = require('koa-route'),
     mongo = require('../config/mongo'),
+    ws = require('../config/ws'),
     ObjectID = mongo.ObjectID;
+
 
 // register koa routes
 exports.init = function (app) {
@@ -37,6 +39,22 @@ function *createAdvertisements() {
   // it is best to validate post body with something like node-validator here, before saving it in the database..
   var advertise = this.request.body;
   console.log(advertise)
+  // conn.once('open', function () {
+  //   console.log('open');
+  //   var gfs = Grid(conn.db);
+ 
+  //   // streaming to gridfs
+  //   //filename to store in mongodb
+  //   var writestream = gfs.createWriteStream({
+  //       filename: 'mongo_file.txt'
+  //   });
+  //   fs.createReadStream('/home/etech/sourcefile.txt').pipe(writestream);
+ 
+  //   writestream.on('close', function (file) {
+  //       // do something with `file`
+  //       console.log(file.filename + 'Written To DB');
+  //   });
+  //});
   // advertise.createdTime = new Date();
   // var results = yield mongo.advertisements.insertOne(advertise);
 
